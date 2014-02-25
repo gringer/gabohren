@@ -6,8 +6,7 @@ import random,math,numpy
 mon = monitors.Monitor('lenovoTPE', width = 29.4, distance = 50)
 mon.setSizePix([1366,768])
 #create a window to draw in
-myWin = visual.Window(size=(1366,768), fullscr=True, monitor = mon,
-    units = 'height')
+myWin = visual.Window(fullscr=True, monitor = mon, units = 'height')
 #add a mouse listener
 mouse = event.Mouse()
 
@@ -53,8 +52,8 @@ fixSpot.setAutoDraw(True)
 #reset mouse clicks
 mouse.clickReset()
 
-cs = 0
-correctKey = keyArr[cs]
+opts['cs'] = 0
+correctKey = keyArr[opts['cs']]
 opts['skill'] = float(1)
 
 def pos2log(value):
@@ -77,13 +76,16 @@ def resetBlobs(showText=True):
         soundsY[x] = sound.SoundPygame(
             value = pos2log(stimuli[x].pos[1])* 300 + 300)
         soundsY[x].setVolume(0.2)
-        stimuli[x].setAutoDraw(True)
         stimuli[x].opacity = 1
         stimuli[x].ori = startAngle[x]
     # stimulus that changes
     opts['cs'] = random.randint(0,5)
     opts['correctKey'] = keyArr[opts['cs']]
 
+def inStim(pointer, target):
+    pos1 = pointer.getPos()
+    pos2 = target.pos
+    return(event.xydist(pos1,pos2) < 0.05)
 
 def task1():
     description = visual.TextStim(myWin, text =
@@ -131,7 +133,6 @@ def task1():
     
     cMessage = visual.TextStim(myWin, pos = (0.475,-0.475), text="%0.2f" % opts['skill'],
         height = 0.05, alignVert = 'bottom', alignHoriz = 'right')
-    cMessage.setAutoDraw(True)
     resetBlobs()
     trialClock.reset()
     
@@ -140,31 +141,44 @@ def task1():
         t = float(trialClock.getTime()) / 20
         logt = (pow(10,t) - 1)/9
         #stimuli[0].setOpacity(logt)
+        stimuli[opts['cs']].setOri(180*t*opts['skill']*mdir[opts['cs']] + startAngle[opts['cs']])
         for x in range(6):
             if(x != opts['cs']):
-                stimuli[x].setPhase(t*math.pi*opts['skill'] + startPhase[x])
-        stimuli[opts['cs']].setOri(180*t*opts['skill']*mdir[cs] + startAngle[cs])
+                stimuli[x].setPhase(t*math.pi*opts['skill']*mdir[x] + startPhase[x])
+            stimuli[x].draw()
         message.draw()
+        # handle mouse clicks
+        buttons, times = mouse.getPressed(getTime = True)
+        inside = False
+        correct = False
+        if(buttons[0] and (times[0] > 0.1)):
+            for x in range(6):
+                if(inStim(mouse,stimuli[x])):
+                    inside = True
+                    correct = (x == opts['cs'])
+            mouse.clickReset()
         #handle key presses each frame
-        for keys in event.getKeys(timeStamped=True):
-            if keys[0]in ['escape','q']:
+        keys = event.getKeys(timeStamped=True)
+        for k in keys:
+            if(k[0] in ['escape','q']):
                 myWin.close()
                 core.quit()
-            elif (keys[0] == opts['correctKey']):
+            if(k[0] in keyArr):
+                inside = True
+                correct = (k[0] == opts['correctKey'])
+        if(inside):
+            if(correct):
                 soundsX[opts['cs']].play()
                 soundsY[opts['cs']].play()
-                trialClock.reset()
                 opts['skill'] *= 0.9
-                resetBlobs(opts['skill'] > 0.5)
-                cMessage.setText("%0.2f" % opts['skill'])
-            elif(keys[0] in keyArr):
-                trialClock.reset()
+            else:
                 opts['skill'] /= 0.9
-                resetBlobs(opts['skill'] > 0.5)
-                cMessage.setText("%0.2f" % opts['skill'])
-            cMessage.draw()
+            trialClock.reset()
+            resetBlobs(opts['skill'] > 0.5)
         if(trialClock.getTime() >= 20):
             nextPhase = True
+        cMessage.setText("%0.2f" % opts['skill'])
+        cMessage.draw()
         myWin.flip()
 
 def resetBlobs2(blobArray, rangeDict):
