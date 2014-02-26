@@ -21,7 +21,7 @@ startPhase = list()
 mdir = list()
 opts = dict()
 
-keyArr = ['f','r','e','s','x','c']
+keyArr = ['6','9','8','7','4','1','2','3']
 
 for x in range(6):
     newGrating = visual.GratingStim(
@@ -181,15 +181,14 @@ def task1():
         cMessage.draw()
         myWin.flip()
 
-def resetBlobs2(blobArray, rangeDict):
+def resetBlobs2(blobArray, featureDict, rangeDict):
     n = len(blobArray)
     poss = random.sample(range(n),n)
     for x in range(n):
-        mdir[x] = random.choice([-1,1])
         blob = blobArray[x]
         p = poss[x]
         if(x == 0):
-            opts['correctKey'] = keyArr[p]
+            featureDict['correctKey'] = featureDict['keyArr'][p]
             opts['soundX'] = sound.SoundPygame(
                 value = pos2log(blob.pos[0])* 300 + 300)
             opts['soundX'].setVolume(0.2)
@@ -201,8 +200,25 @@ def resetBlobs2(blobArray, rangeDict):
         for m in rangeDict:
             if(m == 'ori'):
                 blob.ori = random.uniform(rangeDict[m][0],rangeDict[m][1])
+            else:
+                if(rangeDict[m][2] == 'binary'):
+                    featureDict[m][x] = random.choice(rangeDict[m][0:2])
 
 def task2():
+    numPatches = 8
+    features = dict()
+    for opt in ['mdir','label','keyArr']:
+        features[opt] = [None] * numPatches
+    
+    features['keyArr'] = ['6','9','8','7','4','1','2','3']
+    features['correctKey'] = None
+    
+    for x in range(numPatches):
+        features['label'][x] = visual.TextStim(myWin, pos = (
+            math.cos(x*math.pi/(numPatches/2)) * 0.15,
+            math.sin(x*math.pi/(numPatches/2)) * 0.15),
+            units = 'height', text = ((features['keyArr'])[x]), height = 0.05)
+
     description = visual.TextStim(myWin, text =
     '''In the following exercise your limit of detection for contrast will be discovered. Six
     patches will appear around the dot at the centre of the screen. Five of these will
@@ -255,16 +271,16 @@ def task2():
     sMessage = visual.TextStim(myWin, pos = (-0.475,-0.475),
         text="%d" % opts['score'],
         height = 0.05, alignVert = 'bottom', alignHoriz = 'left')
-    patches = [None] * 6
-    ranges = {'ori': (0,180,'linear')}
+    patches = [None] * numPatches
+    ranges = {'ori': (0,180,'linear'), 'mdir': (-1,1,'binary')}
     patches[0] = visual.GratingStim(
             myWin,tex="sin",mask="gauss",texRes=256, ori = 30,
-            opacity = 1, pos = (0.3, 0), size=0.2, sf=[4,0])
-    for x in range(1,6):
+            opacity = 1, pos = (0.3, 0), size=0.15, sf=[4,0])
+    for x in range(1,numPatches):
         patches[x] = visual.GratingStim(
             myWin,tex="tri",mask="gauss",texRes=256, ori = 30,
-            opacity = 1, pos = (0.3, 0), size=0.2, sf=[4,0])
-    resetBlobs2(patches, ranges)
+            opacity = 1, pos = (0.3, 0), size=0.15, sf=[4,0])
+    resetBlobs2(patches, features, ranges)
 
     nextPhase = False
     trialClock.reset()
@@ -274,38 +290,39 @@ def task2():
         t = float(trialClock.getTime()) / 5
         logt = (pow(10,t) - 1)/9
         op = (t * opts['skill']) if (t < 1) else opts['skill']
-        for x in range(6):
+        for x in range(numPatches):
             patches[x].setOpacity(op)
-            patches[x].setOri(0.5*mdir[x],'+')
+            patches[x].setOri(0.5*features['mdir'][x],'+')
             patches[x].setPhase(0.01,'+')
             patches[x].draw()
             if (opts['skill'] > 0.5):
-                labels[x].draw()
+                features['label'][x].draw()
         cMessage.draw()
         sMessage.draw()
         for keys in event.getKeys(timeStamped=True):
+            keys = (keys[0].replace("num_",""),keys[1])
             if keys[0]in ['escape','q']:
                 myWin.close()
                 core.quit()
-            elif (keys[0] == opts['correctKey']):
+            elif (keys[0] == features['correctKey']):
                 opts['skill'] *= 0.9
                 opts['score'] += 1
                 trialClock.reset()
-                resetBlobs2(patches, ranges)
+                resetBlobs2(patches, features, ranges)
                 sMessage.setText("%d" % opts['score'])
                 cMessage.setText("%0.3f" % opts['skill'])
                 opts['soundX'].play()
                 opts['soundY'].play()
-            elif(keys[0] in keyArr):
+            elif(keys[0] in features['keyArr']):
                 opts['skill'] /= 0.9
                 opts['score'] -= 2
                 trialClock.reset()
-                resetBlobs2(patches, ranges)
+                resetBlobs2(patches, features, ranges)
                 sMessage.setText("%d" % opts['score'])
                 cMessage.setText("%0.3f" % opts['skill'])
         if(trialClock.getTime() >= 20):
             nextPhase = True
         myWin.flip()
 
-task1()
+#task1()
 task2()
