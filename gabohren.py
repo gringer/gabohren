@@ -182,11 +182,12 @@ def contrastTask(startScore = 0):
             if(k[0] in ['escape','q']):
                 myWin.close()
                 core.quit()
-            if(k[0] in features['keyArr']):
+            if((k[0] in features['keyArr']) and (trialClock.getTime() > 0.1)):
                 inside = True
                 correct = (k[0] == features['correctKey'])
         if(inside):
             if(correct):
+                t = max([0.2,t])
                 features['soundX'].play()
                 features['soundY'].play()
                 features['skill'] = features['skill'] * t * 0.9
@@ -309,7 +310,7 @@ def rotateTask(startScore = 0):
             for x in range(numPatches):
                 if(inStim(mouse,patches[x])):
                     inside = True
-                    correct = (x == features['cs'])
+                    correct = (x == features['correctStim'])
             mouse.clickReset()
         #handle key presses each frame
         keys = event.getKeys(timeStamped=True)
@@ -317,11 +318,12 @@ def rotateTask(startScore = 0):
             if(k[0] in ['escape','q']):
                 myWin.close()
                 core.quit()
-            if(k[0] in features['keyArr']):
+            if((k[0] in features['keyArr']) and (trialClock.getTime() > 0.1)):
                 inside = True
                 correct = (k[0] == features['correctKey'])
         if(inside):
             if(correct):
+                t = max([0.2,t])
                 features['soundX'].play()
                 features['soundY'].play()
                 features['skill'] = features['skill'] * t * 0.9
@@ -448,7 +450,7 @@ def sizeTask(startScore = 0):
             for x in range(numPatches):
                 if(inStim(mouse,patches[x])):
                     inside = True
-                    correct = (x == features['cs'])
+                    correct = (x == features['correctStim'])
             mouse.clickReset()
         #handle key presses each frame
         keys = event.getKeys(timeStamped=True)
@@ -456,11 +458,12 @@ def sizeTask(startScore = 0):
             if(k[0] in ['escape','q']):
                 myWin.close()
                 core.quit()
-            if(k[0] in features['keyArr']):
+            if((k[0] in features['keyArr']) and (trialClock.getTime() > 0.1)):
                 inside = True
                 correct = (k[0] == features['correctKey'])
         if(inside):
             if(correct):
+                t = max([0.2,t])
                 features['soundX'].play()
                 features['soundY'].play()
                 features['skill'] = features['skill'] * t * 0.9
@@ -477,7 +480,30 @@ def sizeTask(startScore = 0):
         myWin.flip()
     return((features['score'], features['skill']))
 
+def showSummary(scoreDict):
+    dText = "Your results:\n";
+    for name in scoreDict:
+        dText += "%s: %0.3f\n" % (name, scoreDict[name])
+    description = visual.TextStim(myWin, text = dText +
+                                  "\n\nPress any key to continue.",
+                                  height = 0.05, pos = (0,0.475),
+                                  alignVert='top', wrapWidth = 0.8)
+
+    nextPhase = False
+    while(not nextPhase):
+        description.draw()
+        for keys in event.getKeys(timeStamped=True):
+            if keys[0]in ['escape','q']:
+                myWin.close()
+                core.quit()
+            else:
+                nextPhase = True
+        myWin.flip()
+
+scoreDict = {"score": 0}
 score = 0
-(score,rotateSkill) = rotateTask(score)
-(score,contrastSkill) = contrastTask(score)
-(score,sizeSkill) = sizeTask(score)
+(scoreDict['score'],scoreDict['rotate']) = rotateTask(scoreDict['score'])
+(scoreDict['score'],scoreDict['contrast']) = contrastTask(scoreDict['score'])
+(scoreDict['score'],scoreDict['size']) = sizeTask(scoreDict['score'])
+
+showSummary(scoreDict)
