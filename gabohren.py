@@ -89,18 +89,20 @@ def inStim(pointer, target):
 
 def task1():
     description = visual.TextStim(myWin, text =
-    '''In the following exercise your limit of detection for rotation will be discovered. Six
-    Gabor patches will appear around the dot at the centre of the screen. Five of
-    these will be phasing distractors, and one will be a rotating target (see below).
-    The aim of the exercise is to select the rotating target by pressing the correct
-    key. The keys that can be pressed are the six keys surrounding D (F,R,E,S,X, 
-    and C), and correspond to the patch in the same relative direction. A correct
-    response will reduce the rotation speed and produce a beep. An incorrect
-    response will increase the rotation speed. After 20 seconds with no response
-    the exercise will end.'''.replace("\n    "," ") +
+    '''In the following exercise your limit of detection for rotation
+    will be discovered. Six Gabor patches will appear around the dot
+    at the centre of the screen. Five of these will be phasing
+    distractors, and one will be a rotating target (see below).  The
+    aim of the exercise is to select the rotating target by pressing
+    the correct key. The keys that can be pressed are the six keys
+    surrounding D (F,R,E,S,X, and C), and correspond to the patch in
+    the same relative direction. A correct response will reduce the
+    rotation speed and produce a beep. An incorrect response will
+    increase the rotation speed. After 20 seconds with no response the
+    exercise will end.'''.replace("\n    "," ") +
     "\n\nPress any key to continue.",
     height = 0.03, pos = (0,0.475), alignVert='top', wrapWidth = 0.8)
-    
+
     nextPhase = False
     example1 = visual.GratingStim(
             myWin,tex="sin",mask="gauss",texRes=256,
@@ -128,23 +130,27 @@ def task1():
                 nextPhase = True
         message.draw()
         myWin.flip()
-    
+
     nextPhase = False
-    
-    cMessage = visual.TextStim(myWin, pos = (0.475,-0.475), text="%0.2f" % opts['skill'],
-        height = 0.05, alignVert = 'bottom', alignHoriz = 'right')
+
+    cMessage = visual.TextStim(myWin, pos = (0.475,-0.475),
+                               text="%0.2f" % opts['skill'],
+                               height = 0.05, alignVert = 'bottom',
+                               alignHoriz = 'right')
     resetBlobs()
     trialClock.reset()
-    
+
     #repeat drawing for each frame
     while(not nextPhase):
         t = float(trialClock.getTime()) / 20
         logt = (pow(10,t) - 1)/9
         #stimuli[0].setOpacity(logt)
-        stimuli[opts['cs']].setOri(180*t*opts['skill']*mdir[opts['cs']] + startAngle[opts['cs']])
+        stimuli[opts['cs']].setOri(180*t*opts['skill']*mdir[opts['cs']] +
+                                   startAngle[opts['cs']])
         for x in range(6):
             if(x != opts['cs']):
-                stimuli[x].setPhase(t*math.pi*opts['skill']*mdir[x] + startPhase[x])
+                stimuli[x].setPhase(t*math.pi*opts['skill']*mdir[x] +
+                                    startPhase[x])
             stimuli[x].draw()
         message.draw()
         # handle mouse clicks
@@ -209,10 +215,10 @@ def task2():
     features = dict()
     for opt in ['mdir','label','keyArr']:
         features[opt] = [None] * numPatches
-    
+
     features['keyArr'] = ['6','9','8','7','4','1','2','3']
     features['correctKey'] = None
-    
+
     for x in range(numPatches):
         features['label'][x] = visual.TextStim(myWin, pos = (
             math.cos(x*math.pi/(numPatches/2)) * 0.15,
@@ -220,19 +226,20 @@ def task2():
             units = 'height', text = ((features['keyArr'])[x]), height = 0.05)
 
     description = visual.TextStim(myWin, text =
-    '''In the following exercise your limit of detection for contrast will be discovered. Six
-    patches will appear around the dot at the centre of the screen. Five of these will
-    be non-Gabor distractors with a triangular carrier wave, and one will be a Gabor
-    target with a sine carrier wave (see below).
-    The aim of the exercise is to select the gabor target by pressing the correct
-    key. The keys that can be pressed are the six keys surrounding D (F,R,E,S,X, 
-    and C), and correspond to the patch in the same relative direction. A correct
-    response will reduce the contrast and produce a beep. An incorrect
-    response will increase the contrast. After 20 seconds with no response
-    the exercise will end.'''.replace("\n    "," ") +
+    '''In the following exercise your limit of detection for contrast
+    will be discovered. Six patches will appear around the dot at the
+    centre of the screen. Five of these will be non-Gabor distractors
+    with a triangular carrier wave, and one will be a Gabor target
+    with a sine carrier wave (see below).  The aim of the exercise is
+    to select the gabor target by pressing the correct key. The keys
+    that can be pressed are the six keys surrounding D (F,R,E,S,X, and
+    C), and correspond to the patch in the same relative direction. A
+    correct response will reduce the contrast and produce a beep. An
+    incorrect response will increase the contrast. After 20 seconds
+    with no response the exercise will end.'''.replace("\n    "," ") +
     "\n\nPress any key to continue.",
     height = 0.03, pos = (0,0.475), alignVert='top', wrapWidth = 0.8)
-    
+
     nextPhase = False
     example1 = visual.GratingStim(
             myWin,tex="tri",mask="gauss",texRes=256, ori = 30,
@@ -244,7 +251,7 @@ def task2():
             opacity = 1, pos = (0.3, 0), size=0.2, sf=[4,0])
     text2 = visual.TextStim(myWin,pos=(0.3,-0.2),text='Gabor', height = 0.05,
         color = 'lightblue')
-        
+
     while(not nextPhase):
         example1.setOri(0.5,'+')
         example1.setPhase(0.01,'+')
@@ -263,7 +270,7 @@ def task2():
                 nextPhase = True
         message.draw()
         myWin.flip()
-    
+
     opts['score'] = 0
     cMessage = visual.TextStim(myWin, pos = (0.475,-0.475),
         text="%0.3f" % opts['skill'],
