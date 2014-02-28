@@ -45,6 +45,8 @@ def resetBlobs2(blobArray, featureDict, rangeDict):
     for x in range(n):
         blob = blobArray[x]
         p = poss[x]
+        blob.pos = (math.cos(p*math.pi/(n/2)) * 0.3,
+            math.sin(p*math.pi/(n/2)) * 0.3)
         if(x == 0):
             featureDict['correctKey'] = featureDict['keyArr'][p]
             featureDict['soundX'] = sound.SoundPygame(
@@ -53,8 +55,6 @@ def resetBlobs2(blobArray, featureDict, rangeDict):
             featureDict['soundY'] = sound.SoundPygame(
                 value = pos2log(blob.pos[1])* 300 + 300)
             featureDict['soundY'].setVolume(0.2)
-        blob.pos = (math.cos(p*math.pi/(n/2)) * 0.3,
-            math.sin(p*math.pi/(n/2)) * 0.3)
         for m in rangeDict:
             if(m == 'ori'):
                 blob.ori = random.uniform(rangeDict[m][0],rangeDict[m][1])
@@ -481,9 +481,9 @@ def sizeTask(startScore = 0):
     return((features['score'], features['skill']))
 
 def showSummary(scoreDict):
-    dText = "Your results:\n";
+    dText = "Your results:\n\n";
     for name in scoreDict:
-        dText += "%s: %0.3f\n" % (name, scoreDict[name])
+        dText += "  %s: %0.3f\n" % (name, scoreDict[name])
     description = visual.TextStim(myWin, text = dText +
                                   "\n\nPress any key to continue.",
                                   height = 0.05, pos = (0,0.475),
@@ -506,4 +506,5 @@ score = 0
 (scoreDict['score'],scoreDict['contrast']) = contrastTask(scoreDict['score'])
 (scoreDict['score'],scoreDict['size']) = sizeTask(scoreDict['score'])
 
+fixSpot.setAutoDraw(False)
 showSummary(scoreDict)
